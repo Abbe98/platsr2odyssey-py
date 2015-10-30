@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import json, urllib.request, re, sys
+import json, urllib.request, re, html, sys
 
 class Parse:
   platsrEndpoint = 'http://www.platsr.se/platsr/api/v1/'
@@ -10,8 +10,8 @@ class Parse:
     Parse.result = self.parseCollection(self.call(collectionUrl))
 
   def call(self, url):
-    # .encode(sys.stdout.encoding,'replace').decode(sys.stdout.encoding) should be removed in production
-    return json.loads(urllib.request.urlopen(url).read().decode('utf-8').encode(sys.stdout.encoding,'replace').decode(sys.stdout.encoding))
+    print('Hämtar: ' + url)
+    return json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
 
   def parseCollection(self, data):
     collection = {}
@@ -44,8 +44,8 @@ class Parse:
 
     coordinate = re.findall(r'([-]?[0-9]+\.[0-9]+)', data['GmlWGS84'])
     place['coordinate'] = {}
-    place['coordinate']['lng'] = coordinate[0]
-    place['coordinate']['lat'] = coordinate[1]
+    place['coordinate']['lng'] = coordinate[1]
+    place['coordinate']['lat'] = coordinate[0]
 
     place['author'] = self.parseAuthor(self.call(data['CreatedBy']['Href']))
 
@@ -68,7 +68,7 @@ class Parse:
   def parseStory(self, data):
     story = {}
     story['title'] = data['Name']
-    story['description'] = data['Description']
+    story['content'] = data['Description']
     story['author'] = data['Upphovsman']
     story['copyrigth'] = self.parseCopyrigth(self.call(data['Copyright']['Href']))
 
@@ -83,6 +83,47 @@ class Parse:
     copyrigth = data['Name']
     return copyrigth
 
+class OdysseyMarkdown:
+  markdown = ''
+
+  def __init__(self, data):
+    self.config(data)
+
+    for place in data['places']:
+      self.place(place)
+
+  def config(self, data):
+    self.markdown = '```\n' + '-title: "' + data['title'] + '"\n-author: "' + data['author']['user'] + '"\n' + '```\n'
+
+  def place(self, data):
+    self.markdown += '#' + data['title'] + '\n```\n' + '- center: [' + data['coordinate']['lng'] + ', ' + data['coordinate']['lat'] + ']\n' + '- zoom: 15\n' + 'L.marker([' + data['coordinate']['lng'] + ', ' + data['coordinate']['lat'] + ']).actions.addRemove(S.map)\n```\n'
+    self.markdown += '**' + data['description'] + '**\n'
+
+    for story in data['stories']:
+      self.story(story)
+
+  def story(self, data):
+    self.markdown += '##' + data['title'] + '\n'
+    self.markdown += '*Av ' + data['author'] + ' \nCopyright: ' + data['copyrigth'] + '*\n\n'
+
+    if data['image'] != False:
+      self.image(data['image'])
+
+    # There is probably more HTML tags that needs to be converted
+    storyContent = data['content'].replace('<p>', '').replace('</p>', '\n\n')
+    storyContent = storyContent.replace('<em>', '*').replace('</em>', '*')
+
+    self.markdown += storyContent + '\n'
+
+  def image(self, data):
+    self.markdown += '![' + data['description'] + '](' + data['file'] + ')\n'
+    self.markdown += '**' + data['title'] + '**\n'
+    self.markdown += '*Upphovsman: ' + data['author'] + ' Copyright: ' + data['copyrigth'] + '*\n'
 
 Parse(sys.argv[1])
-print (Parse.result)
+output = OdysseyMarkdown(Parse.result)
+
+outputFile = open('output/markdown.txt', 'w')
+outputFile.write(html.unescape(output.markdown))
+
+print('\nKlar')
