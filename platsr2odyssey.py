@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import json, urllib.request, re, html, sys
+import json, urllib.request, re, html, codecs, sys
 
 class Parse:
   platsrEndpoint = 'http://www.platsr.se/platsr/api/v1/'
@@ -16,6 +16,7 @@ class Parse:
   def parseCollection(self, data):
     collection = {}
     collection['title'] = data['Name']
+    collection['description'] = data['Description']
 
     if 'Image' in data.keys():
       collection['image'] = self.parseImage(self.call(data['Image']['Href']))
@@ -125,5 +126,10 @@ output = OdysseyMarkdown(Parse.result)
 
 outputFile = open('output/markdown.txt', 'w')
 outputFile.write(html.unescape(output.markdown))
+
+odysseyHtml = open('output/odyssey/index.html', 'r').read()
+odysseyHtml = odysseyHtml.replace('content=""', 'content="' + Parse.result['description'] + '"').replace('<script id="md_template" type="text/template"></script>', '<script id="md_template" type="text/template">' + html.unescape(output.markdown) + '</script>')
+outputOdysseyFile = codecs.open('output/odyssey/index.html', 'w', 'utf-8')
+outputOdysseyFile.write(odysseyHtml)
 
 print('\nKlar')
