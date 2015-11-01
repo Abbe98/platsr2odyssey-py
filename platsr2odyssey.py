@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json, urllib.request, re, html, codecs, sys
 
 class Parse:
