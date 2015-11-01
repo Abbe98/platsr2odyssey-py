@@ -127,7 +127,7 @@ output = OdysseyMarkdown(Parse.result)
 outputFile = open('output/markdown.txt', 'w')
 outputFile.write(html.unescape(output.markdown))
 
-odysseyHtml = open('output/odyssey/index.html', 'r').read()
+odysseyHtml = open('template.html', 'r').read()
 odysseyHtml = odysseyHtml.replace('content=""', 'content="' + Parse.result['description'] + '"').replace('<script id="md_template" type="text/template"></script>', '<script id="md_template" type="text/template">' + html.unescape(output.markdown) + '</script>')
 outputOdysseyFile = codecs.open('output/odyssey/index.html', 'w', 'utf-8')
 outputOdysseyFile.write(odysseyHtml)
