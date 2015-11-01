@@ -50,9 +50,12 @@ class Parse:
 
     place['author'] = self.parseAuthor(self.call(data['CreatedBy']['Href']))
 
-    place['stories'] = []
-    for story in data['Stories']:
-      place['stories'].append(self.parseStory(self.call(story['Href'])))
+    if 'Stories' in data.keys():
+      place['stories'] = []
+      for story in data['Stories']:
+        place['stories'].append(self.parseStory(self.call(story['Href'])))
+    else:
+      place['stories'] = False
 
     return place
 
@@ -100,8 +103,9 @@ class OdysseyMarkdown:
     self.markdown += '#' + data['title'] + '\n```\n' + '- center: [' + data['coordinate']['lng'] + ', ' + data['coordinate']['lat'] + ']\n' + '- zoom: 15\n' + 'L.marker([' + data['coordinate']['lng'] + ', ' + data['coordinate']['lat'] + ']).actions.addRemove(S.map)\n```\n'
     self.markdown += '**' + data['description'] + '**\n'
 
-    for story in data['stories']:
-      self.story(story)
+    if data['stories'] != False:
+      for story in data['stories']:
+        self.story(story)
 
   def story(self, data):
     self.markdown += '##' + data['title'] + '\n'
