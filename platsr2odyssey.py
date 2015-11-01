@@ -1,5 +1,9 @@
 import json, urllib.request, re, html, codecs, sys
 
+def removeNonAscii(string):
+  #Platsr.se does not return utf-8 encoded stuff so remove non supported Ascii(150)
+  return ''.join(i for i in string if 150 != ord(i))
+
 class Parse:
   platsrEndpoint = 'http://www.platsr.se/platsr/api/v1/'
   result = {}
@@ -11,7 +15,6 @@ class Parse:
   def call(self, url):
     print('Hämtar: ' + url)
     return json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
-
   def parseCollection(self, data):
     collection = {}
     collection['title'] = data['Name']
@@ -128,10 +131,10 @@ Parse(sys.argv[1])
 output = OdysseyMarkdown(Parse.result)
 
 outputFile = open('output/markdown.txt', 'w')
-outputFile.write(html.unescape(output.markdown))
+outputFile.write(removeNonAscii(html.unescape(output.markdown)))
 
 odysseyHtml = open('template.html', 'r').read()
-odysseyHtml = odysseyHtml.replace('content=""', 'content="' + Parse.result['description'] + '"').replace('<script id="md_template" type="text/template"></script>', '<script id="md_template" type="text/template">' + html.unescape(output.markdown) + '</script>')
+odysseyHtml = odysseyHtml.replace('content=""', 'content="' + Parse.result['description'] + '"').replace('<script id="md_template" type="text/template"></script>', '<script id="md_template" type="text/template">' + removeNonAscii(html.unescape(output.markdown)) + '</script>')
 outputOdysseyFile = codecs.open('output/odyssey/index.html', 'w', 'utf-8')
 outputOdysseyFile.write(odysseyHtml)
 
