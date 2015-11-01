@@ -119,6 +119,8 @@ class OdysseyMarkdown:
     # There is probably more HTML tags that needs to be converted
     storyContent = data['content'].replace('<p>', '').replace('</p>', '\n\n')
     storyContent = storyContent.replace('<em>', '*').replace('</em>', '*')
+    storyContent = storyContent.replace('<strong>', '**').replace('</strong>', '**')
+
 
     self.markdown += storyContent + '\n'
 
