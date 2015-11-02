@@ -15,6 +15,7 @@ class Parse:
   def call(self, url):
     print('Hämtar: ' + url)
     return json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
+
   def parseCollection(self, data):
     collection = {}
     collection['title'] = data['Name']
