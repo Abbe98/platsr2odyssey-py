@@ -1,8 +1,8 @@
-#Platsr2Odyssey.py
+# Platsr2Odyssey.py
 
 **Platsr2Odyssey.py** is a script for turning [platsr.se](http://www.platsr.se/) collections into interactive websites using Odyssey.js, allowing anyone to create their own interactive map based storytelling website. You can find a live example [here](http://abbe98.github.io/platsr2odyssey-py/).
 
-##How to use
+## How to use
 
  - This requires that you have Python 3 installed.
 
